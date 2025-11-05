@@ -1,5 +1,12 @@
 #include "shell.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
+// ==============================
+// Function: read_cmd()
+// ==============================
 char* read_cmd(char* prompt, FILE* fp) {
     printf("%s", prompt);
     char* cmdline = (char*) malloc(sizeof(char) * MAX_LEN);
@@ -14,11 +21,9 @@ char* read_cmd(char* prompt, FILE* fp) {
         free(cmdline);
         return NULL; // Handle Ctrl+D
     }
-    
-    cmdline[pos] = '\0';
+      cmdline[pos] = '\0';
     return cmdline;
 }
-
 char** tokenize(char* cmdline) {
     // Edge case: empty command line
     if (cmdline == NULL || cmdline[0] == '\0' || cmdline[0] == '\n') {
@@ -37,9 +42,8 @@ char** tokenize(char* cmdline) {
     int argnum = 0;
 
     while (*cp != '\0' && argnum < MAXARGS) {
-        while (*cp == ' ' || *cp == '\t') cp++; // Skip leading whitespace
-        
-        if (*cp == '\0') break; // Line was only whitespace
+	 while (*cp == ' ' || *cp == '\t') cp++; // Skip whitespace
+        if (*cp == '\0') break;
 
         start = cp;
         len = 1;
@@ -52,12 +56,51 @@ char** tokenize(char* cmdline) {
     }
 
     if (argnum == 0) { // No arguments were parsed
-        for(int i = 0; i < MAXARGS + 1; i++) free(arglist[i]);
+	for(int i = 0; i < MAXARGS + 1; i++) free(arglist[i]);
         free(arglist);
         return NULL;
     }
 
     arglist[argnum] = NULL;
     return arglist;
+}
+int handle_builtin(char **args)
+{
+    if (args == NULL || args[0] == NULL)
+        return 1;  // Empty command
+
+    // exit command
+    if (strcmp(args[0], "exit") == 0) {
+        printf("Exiting shell...\n");
+        exit(0);
+    }
+
+    // cd command
+    else if (strcmp(args[0], "cd") == 0) {
+        if (args[1] == NULL)
+            fprintf(stderr, "cd: expected argument\n");
+        else if (chdir(args[1]) != 0)
+            perror("cd");
+        return 1;
+    }
+
+    // help command
+    else if (strcmp(args[0], "help") == 0) {
+        printf("Built-in commands:\n");
+        printf("  cd <dir>   : change directory\n");
+        printf("  help       : show this help message\n");
+        printf("  exit       : exit the shell\n");
+        printf("  jobs       : list background jobs (not yet implemented)\n");
+        return 1;
+    }
+
+    // jobs command (placeholder)
+    else if (strcmp(args[0], "jobs") == 0) {
+        printf("Job control not yet implemented.\n");
+        return 1;
+    }
+
+    // Not a built-in command → return 0 so execute() runs
+    return 0;
 }
 
