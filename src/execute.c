@@ -1,10 +1,10 @@
-#include "shell.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <stdio.h>       // ✅ MUST be first - perror(), printf()
+#include <stdlib.h>      // ✅ exit()
+#include <string.h>      // ✅ string functions
+#include <unistd.h>      // ✅ fork(), execvp()
 #include <sys/types.h>   // ✅ for pid_t
 #include <sys/wait.h>    // ✅ for waitpid()
-#include <string.h>  
+#include "shell.h"       // ✅ Include AFTER system headers
 
 int execute(char* arglist[]) {
     int status;
